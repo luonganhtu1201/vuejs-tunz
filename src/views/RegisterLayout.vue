@@ -1,36 +1,45 @@
 <template>
-  <div class="container">
-    <div class="loginWrap">
-      <div class="logo">
-        <img src="../assets/Untitled-1.png" alt="">
-      </div>
-      <div class="inputWrap">
-        <div class="inputLabel">
-          <p>Email</p>
-        </div>
-        <input type="text" v-model="email">
-        <div class="error">
-          <span>{{errorEmail}}</span>
-        </div>
-      </div>
-      <div class="inputWrap">
-        <div class="inputLabel">
-          <p>Mật khẩu</p>
-        </div>
-        <input type="password" v-model="password">
-        <div class="error">
-          <span>{{errorPass}}</span>
-        </div>
-      </div>
-      <button @click="loginDs()" class="loginButton">Đăng nhập</button>
-      <p>Chưa có tài khoản ? <a href="/register">Đăng kí ngay !</a></p>
+<div class="container">
+  <div class="loginWrap">
+    <div class="logo">
+      <img src="../assets/Untitled-1.png" alt="">
     </div>
+    <div class="inputWrap">
+      <div class="inputLabel">
+        <p>Email</p>
+      </div>
+      <input type="text" v-model="email">
+      <div class="error">
+        <span>{{errorEmail}}</span>
+      </div>
+    </div>
+    <div class="inputWrap">
+      <div class="inputLabel">
+        <p>Mật khẩu</p>
+      </div>
+      <input type="password" v-model="password">
+      <div class="error">
+        <span>{{errorPass}}</span>
+      </div>
+    </div>
+    <div class="inputWrap">
+      <div class="inputLabel">
+        <p>Xác nhận lại mật khẩu</p>
+      </div>
+      <input type="password" v-model="passwordCheck">
+      <div class="error">
+        <span>{{errorPassCheck}}</span>
+      </div>
+    </div>
+    <button @click="registerSs()" class="loginButton">Đăng Kí</button>
+    <p>Đã có tài khoản ? <a href="/login">Đăng nhập ngay !</a></p>
   </div>
+</div>
 </template>
 
 <script>
 export default {
-  name: "LoginLayout",
+  name: "RegisterLayout",
   data(){
     return{
       email:'',
@@ -54,7 +63,7 @@ export default {
     }
   },
   methods:{
-    loginDs(){
+    registerSs(){
       let check = true
       if (this.email === ''){
         this.errorEmail = "Email không được để trống"
@@ -70,15 +79,22 @@ export default {
         check = false
         this.errorPass = "Mật khẩu phải lớn hơn 6 ký tự"
       }
-      if(check){
-        this.$router.push({ path: `/admin`})
+      if(this.passwordCheck === ''){
+        check = false
+        this.errorPassCheck = "Mật khẩu xác nhận không được để trống"
+      }else if(this.password !== this.passwordCheck){
+        check = false
+        this.errorPassCheck = "Mật khẩu không khớp"
       }
-    },
-    validEmail: function (email) {
-      let re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-      return re.test(email);
-    },
-  },
+      if(check){
+        this.$message({
+          message: 'Chúc mừng , Bạn đã đăng kí tài khoản thành công',
+          type: 'success'
+        });
+        this.$router.push({ path: `/login`})
+      }
+    }
+  }
 }
 </script>
 
@@ -97,24 +113,29 @@ export default {
     padding: 24px;
     height: max-content;
     width: 300px;
-    .logo{
-      width: 100%;
-      img{
-        width: 100%;
-      }
-    }
     a{
       text-decoration: none;
       color : #ed145b;
     }
-    .register{
+    .logo {
+      width: 100%;
+
+      img {
+        width: 100%;
+      }
+    }
+
+    .register {
       background-color: #bcbcbc;
     }
+
     .inputWrap {
       margin-bottom: 12px;
-      p{
+
+      p {
         font-size: 13px;
       }
+
       .inputLabel {
         font-weight: bold;
         margin-bottom: 8px;
@@ -141,19 +162,22 @@ export default {
     }
   }
 }
-.error{
+
+.error {
   text-align: left;
   font-size: 12px;
   color: red;
   margin-top: 8px;
 }
-input{
+
+input {
   height: 50px;
   border: 1px solid #d9d9d9;
   display: block;
-  outline: none ;
+  outline: none;
 }
-input:focus,input:hover{
+
+input:focus, input:hover {
   outline: 1px solid #ed145b;
 }
 </style>
