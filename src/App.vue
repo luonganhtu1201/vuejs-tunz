@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <router-view/>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -12,7 +12,9 @@
   text-align: center;
   color: #2c3e50;
 }
-
+body{
+  margin: 0px;
+}
 #nav {
   padding: 30px;
 
@@ -26,3 +28,8 @@
   }
 }
 </style>
+<script>
+export default {
+  name:'App'
+}
+</script>

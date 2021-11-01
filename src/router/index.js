@@ -1,25 +1,26 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import AdminLayout from '../views/AdminLayout.vue'
-import UserLayout from '../views/UserLayout.vue'
-import WorkLayout from '../views/WorkLayout.vue'
-import LoginLayout from '../views/LoginLayout.vue'
-import RegisterLayout from '../views/RegisterLayout.vue'
+import AdminLayout from '../layouts/AdminLayout.vue'
+import WorkLayout from '../views/Work.vue'
+import Register from '../views/Register.vue'
+import Login from '../views/Login.vue'
+import UserUpdate from '../views/UserUpdate.vue'
 
 Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/admin',
+    path: '/',
     name: 'AdminLayout',
     component: AdminLayout,
     children:[
       {
         path:'user',
-        component: UserLayout
+        name: 'UserLayout',
+        component: UserUpdate
       },
       {
-        path:'work',
+        path:'',
         component: WorkLayout
       }
     ]
@@ -27,12 +28,12 @@ const routes = [
   {
     path: '/login',
     name: 'LoginLayout',
-    component: LoginLayout
+    component: Login
   },
   {
     path: '/register',
     name: 'RegisterLayout',
-    component: RegisterLayout
+    component: Register
   },
 ]
 
