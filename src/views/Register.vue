@@ -12,6 +12,15 @@
           </div>
           <div class="inputWrap">
             <div class="inputLabel">
+              <p>Họ tên</p>
+            </div>
+            <input type="text" aria-placeholder="Email" v-model="name">
+            <div class="error">
+              <span>{{errorName}}</span>
+            </div>
+          </div>
+          <div class="inputWrap">
+            <div class="inputLabel">
               <p>Email</p>
             </div>
             <input type="text" v-model="email">
@@ -38,7 +47,7 @@
             </div>
           </div>
           <div class="login-button">
-            <button @click="registerSs()" class="loginButton">Đăng kí</button>
+            <button @click="HandleRegister()" class="loginButton">Đăng kí</button>
           </div>
           <p>Đã có tài khoản ? <span class="registerUser" @click="login()">Đăng nhập ngay !</span></p>
         </div>
@@ -49,16 +58,19 @@
 </template>
 
 <script>
+import api from '../api'
 export default {
-  name: "RegisterLayout",
+  name: "Register",
   data(){
     return{
+      name:'',
       email:'',
       password:'',
       passwordCheck:'',
       errorEmail:'',
       errorPass :'',
       errorPassCheck :'',
+      errorName :'',
     }
   },
   watch:{
@@ -71,6 +83,11 @@ export default {
       if (value.length>0){
         this.errorPass = ''
       }
+    },
+    name(value){
+      if (value.length>0){
+        this.errorName = ''
+      }
     }
   },
   methods:{
@@ -78,8 +95,15 @@ export default {
       let re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       return re.test(email);
     },
-    registerSs(){
+    HandleRegister(){
       let check = true
+      if (this.name === ''){
+        check = false
+        this.errorName = 'Họ tên không được để trống'
+      }else if (this.name.length <= 5 ){
+        check = false
+        this.errorName = 'Họ tên ít nhất phải 5 kí tự'
+      }
       if (this.email === ''){
         this.errorEmail = "Email không được để trống"
         check = false
@@ -102,11 +126,17 @@ export default {
         this.errorPassCheck = "Mật khẩu không khớp"
       }
       if(check){
-        this.$message({
-          message: 'Chúc mừng , Bạn đã đăng kí tài khoản thành công',
-          type: 'success'
-        });
-        this.$router.push({ path: `/login`})
+        api.register({
+          name:this.name,
+          email:this.email,
+          password:this.password
+        }).then(()=>{
+          this.$message({
+            message: 'Chúc mừng , Bạn đã đăng kí tài khoản thành công',
+            type: 'success'
+          });
+          this.$router.push({ path: `/login`})
+        })
       }
     },
     login(){

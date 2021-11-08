@@ -108,7 +108,7 @@ import draggable from 'vuedraggable';
 import DetailCard from "../components/DetailCard";
 let id = 1;
 export default {
-  name: "WorkLayout",
+  name: "Work",
   order: 0,
   components: {
     DetailCard,

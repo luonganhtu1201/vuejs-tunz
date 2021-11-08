@@ -17,7 +17,7 @@
             </div>
           </el-dropdown-item>
           <el-dropdown-item>
-            <div class="item-mng" @click="handlePush('login')">
+            <div class="item-mng" @click="logout">
               <i class="el-icon-switch-button"></i>
               Đăng xuất
             </div>
@@ -39,11 +39,23 @@
 </template>
 
 <script>
+import {mapMutations} from 'vuex'
 export default {
   name: "AdminLayout",
   methods:{
+    ...mapMutations('auth',[
+        'updateLoginStatus',
+        'updateAuthUser',
+        'updateAccessToken'
+    ]),
     handlePush(value){
       this.$router.push({ path: `/${value}` });
+    },
+    logout() {
+      this.updateLoginStatus(false)
+      this.updateAuthUser({})
+      this.updateAccessToken('')
+      this.$router.push('/login')
     }
   }
 }

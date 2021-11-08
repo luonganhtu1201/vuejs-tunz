@@ -1,11 +1,11 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import AdminLayout from '../layouts/AdminLayout.vue'
-import WorkLayout from '../views/Work.vue'
+import Work from '../views/Work.vue'
 import Register from '../views/Register.vue'
 import Login from '../views/Login.vue'
 import UserUpdate from '../views/UserUpdate.vue'
-
+import store from  '../store'
 Vue.use(VueRouter)
 
 const routes = [
@@ -16,23 +16,24 @@ const routes = [
     children:[
       {
         path:'user',
-        name: 'UserLayout',
+        name: 'UserUpdate',
         component: UserUpdate
       },
       {
         path:'',
-        component: WorkLayout
+        name:'Work',
+        component: Work
       }
     ]
   },
   {
     path: '/login',
-    name: 'LoginLayout',
+    name: 'Login',
     component: Login
   },
   {
     path: '/register',
-    name: 'RegisterLayout',
+    name: 'Register',
     component: Register
   },
 ]
@@ -42,5 +43,15 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes
 })
-
+router.beforeEach((to, from, next) => {
+  if (to.name !== 'Login' && !store.state.auth.isAuthenticated && to.name !== 'Register') {
+    next({ name: 'Login' || 'Register'})
+  } else if(to.name === 'Login' && store.state.auth.isAuthenticated) {
+    next({ name: 'Work' })
+  } else if (to.name === 'Register' && store.state.auth.isAuthenticated){
+    next({ name: 'Work' })
+  }else {
+    next()
+  }
+})
 export default router

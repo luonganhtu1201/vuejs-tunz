@@ -10,58 +10,60 @@
         <b>ĐỔI MẬT KHẨU</b>
       </div>
       <el-row>
-        <el-col :span="16">
+        <el-col :span="24">
           <div class="user">
             <div v-if="checkChange" class="info-user">
-              <div class="form">
-                <input type="text" id="email" class="form__input" autocomplete="off" placeholder=" ">
-                <label class="form__label">Họ tên</label>
+              <el-row>
+                <el-col :span="24">
+                  <div class="update-avt">
+                    <input id="imgAv" type="file" style="display: none" @change="onFileChange"/>
+                    <div id="preview" >
+                      <img :src="url?url:'https://i.pinimg.com/736x/59/18/d8/5918d8e9040516b65f93c75a9c5b8175.jpg'" @click="openUpload()"/>
+                    </div>
+                    <div class="update-avatar" @click="openUpload()">
+                      <i class="el-icon-camera-solid"></i>
+                    </div>
+                  </div>
+                </el-col>
+                <el-col :span="24">
+                  <div class="input-wrap">
+                    <div class="form">
+                      <input type="text" id="email" class="form__input email-disable" v-model="name" autocomplete="off" placeholder=" ">
+                      <label class="form__label">Họ tên</label>
+                    </div>
+                    <p class="error">{{errorName}}</p>
+                  </div>
+                  <div class="input-wrap">
+                    <div class="form">
+                      <input type="text" id="email" class="form__input" disabled="" v-model="authUser.email" autocomplete="off" placeholder=" ">
+                      <label class="form__label">Email</label>
+                    </div>
+                  </div>
+                  <div class="login-button">
+                    <button class="loginButton" @click="HandleInfo"><b>Cập nhật</b></button>
+                  </div>
+                </el-col>
+              </el-row>
+            </div>
+            <div v-else class="info-user pass-reset">
+              <div class="input-wrap">
+                <div class="form">
+                  <input type="text" id="email" class="form__input email-disable" autocomplete="off" placeholder=" ">
+                  <label class="form__label">Mật khẩu mới</label>
+                </div>
+                <p class="error">Lỗi</p>
               </div>
-              <div class="form">
-                <input type="text" id="email" class="form__input" autocomplete="off" placeholder=" ">
-                <label class="form__label">Email</label>
-              </div>
-              <div class="form">
-                <input type="text" id="email" class="form__input" autocomplete="off" placeholder=" ">
-                <label class="form__label">Số điện thoại</label>
+              <div class="input-wrap">
+                <div class="form">
+                  <input type="text" id="email" class="form__input email-disable" autocomplete="off" placeholder=" ">
+                  <label class="form__label">Xác nhận lại mật khẩu</label>
+                </div>
+                <p class="error">Lỗi</p>
               </div>
               <div class="login-button">
                 <button class="loginButton"><b>Cập nhật</b></button>
               </div>
             </div>
-            <div v-else class="info-user">
-              <div class="form">
-                <input type="text" id="email" class="form__input" autocomplete="off" placeholder=" ">
-                <label class="form__label">Mật khẩu cũ</label>
-              </div>
-              <div class="form">
-                <input type="text" id="email" class="form__input" autocomplete="off" placeholder=" ">
-                <label class="form__label">Mật khẩu mới</label>
-              </div>
-              <div class="form">
-                <input type="text" id="email" class="form__input" autocomplete="off" placeholder=" ">
-                <label class="form__label">Xác nhận lại mật khẩu</label>
-              </div>
-              <div class="login-button">
-                <button class="loginButton"><b>Cập nhật</b></button>
-              </div>
-            </div>
-          </div>
-        </el-col>
-        <el-col :span="8">
-          <div class="update-avt">
-            <input id="imgAv" type="file" style="display: none" @change="onFileChange"/>
-            <div id="preview" >
-              <img :src="url?url:'https://i.pinimg.com/736x/59/18/d8/5918d8e9040516b65f93c75a9c5b8175.jpg'" @click="openUpload()"/>
-            </div>
-            <div class="update-avatar" @click="openUpload()">
-              <i class="el-icon-camera-solid"></i>
-            </div>
-          </div>
-          <div class="old-info">
-            <p><b>Lương Anh Tú</b></p>
-            <p>tula.hubt@gmail.com</p>
-            <hr class="hr-custom">
           </div>
         </el-col>
       </el-row>
@@ -71,23 +73,55 @@
 </template>
 
 <script>
+import api from "../api";
+import {mapMutations,mapState} from "vuex";
 export default {
-  name: "UserLayout2",
+  name: "UserUpdate",
   data(){
     return{
       url: null,
       ActiveUS : '',
       ActivePass :'',
-      checkChange:true
+      checkChange:true,
+      name:'',
+      password:'',
+      confirmPass:'',
+      errorPass :'',
+      errorPassCheck :'',
+      errorName :'',
     }
   },
   methods: {
+    ...mapMutations('auth',[
+      'updateAuthUser',
+    ]),
     openUpload(){
       document.getElementById('imgAv').click();
     },
     onFileChange(e) {
       const file = e.target.files[0];
       this.url = URL.createObjectURL(file);
+    },
+    HandleInfo(){
+      let check = true
+      if (this.name === ''){
+        check = false
+        this.errorName = 'Họ tên không được để trống'
+      }else if (this.name.length <= 5 ){
+        check = false
+        this.errorName = 'Họ tên ít nhất phải 5 kí tự'
+      }
+      if(check){
+        api.updateInfoUser({
+          name:this.name,
+        }).then(()=>{
+          this.$message({
+            message: 'Cập nhật thông tin thành công ! ',
+            type: 'success'
+          });
+          this.$router.push({ path: `/user`})
+        })
+      }
     },
     changeInfo(val){
       if (val === 0){
@@ -98,6 +132,24 @@ export default {
         this.ActivePass = 'background-color:#141414';
         this.ActiveUS = 'background-color:#1414148c';
         this.checkChange = false;
+      }
+    }
+  },
+  computed:{
+    ...mapState('auth',[
+      'authUser'
+    ])
+  },
+  mounted() {
+    api.getAuth().then((res)=>{
+      this.updateAuthUser(res.data)
+    })
+    this.name = this.authUser.name
+  },
+  watch:{
+    name(){
+      if (this.name.length > 0){
+        this.errorName = ''
       }
     }
   }
@@ -119,7 +171,6 @@ export default {
   background-color: #1414148c;
 }
 .update-avt{
-  padding-top: 30px;
   position: relative;
 }
 #preview {
@@ -183,7 +234,7 @@ export default {
 .user-update{
   height: 94vh;
   .img-back{
-    height: 400px;
+    height: 350px;
     img{
       width: 100%;
       object-fit: cover;
@@ -207,7 +258,10 @@ export default {
 }
 
 .info-user{
-  padding: 50px;
+  height: 500px;
+  padding-top: 30px;
+  width: 50%;
+  margin: 0 auto;
 }
 //Input
 $clr-primary: #e55483;
@@ -243,12 +297,27 @@ body {
   font-size: 1.2rem;
   background-color: $clr-bg;
 }
-
+.email-disable{
+  background-image: linear-gradient(to right, #141414, #0000004d, #ff00007a) !important;
+}
+.pass-reset{
+  padding-top: 110px;
+  .input-wrap{
+    margin-bottom: 30px;
+  }
+}
+.input-wrap{
+  margin: 25px 0;
+  p{
+    margin: 15px 0 0 15px;
+    text-align: left;
+    color: #ed145b;
+    font-size: 14px;
+  }
+}
 .form {
   position: relative;
   height: 3rem;
-  margin-bottom: 30px;
-
   &__input {
     position: absolute;
     top: 0;

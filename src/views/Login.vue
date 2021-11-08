@@ -29,7 +29,7 @@
             </div>
           </div>
           <div class="login-button">
-            <button @click="loginDs()" class="loginButton"><b>Đăng nhập</b></button>
+            <button @click="HandleLogin()" class="loginButton"><b>Đăng nhập</b></button>
           </div>
           <p>Chưa có tài khoản ? <span class="registerUser" @click="register()">Đăng kí ngay !</span></p>
         </div>
@@ -40,8 +40,10 @@
 </template>
 
 <script>
+import api from '../api'
+import {mapMutations} from 'vuex'
 export default {
-  name: "Login2",
+  name: "Login",
   data(){
     return{
       email:'',
@@ -65,7 +67,11 @@ export default {
     }
   },
   methods:{
-    loginDs(){
+    ...mapMutations('auth',[
+        'updateAccessToken',
+        'updateLoginStatus'
+    ]),
+    HandleLogin(){
       let check = true
       if (this.email === ''){
         this.errorEmail = "Email không được để trống"
@@ -82,7 +88,16 @@ export default {
         this.errorPass = "Mật khẩu phải lớn hơn 6 ký tự"
       }
       if(check){
-        this.$router.push({ path: `/admin`})
+        api.login({
+          email:this.email,
+          password:this.password
+        }).then((res)=>{
+          this.updateAccessToken(res.data.access_token)
+          this.updateLoginStatus(true)
+          this.$router.push({path:'/'});
+        }).catch(() => {
+          this.$message({message: 'Thông tin tài khoản hoặc mật khẩu không chính xác', type: 'error'});
+        });
       }
     },
     validEmail: function (email) {
