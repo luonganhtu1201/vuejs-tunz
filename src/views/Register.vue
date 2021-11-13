@@ -1,7 +1,7 @@
 <template>
   <el-row :gutter="20">
     <el-col :span="16"><div class="grid-content bg-purple">
-      <img class="backgroud" src="../assets/Untitled-3.png" alt="">
+      <img class="backgroud" src="../assets/krasnyi-linii-strelka-material-design.jpg" alt="">
     </div></el-col>
     <el-col :span="8">
       <div class="grid-content white-T">
@@ -181,7 +181,7 @@ export default {
   border-radius: 4px;
   height: 100vh;
   .form{
-    padding: 65px;
+    padding: 44px;
     .logo{
       padding-bottom: 10px;
       img{
@@ -195,10 +195,12 @@ export default {
       }
     }
     .inputWrap{
+      padding: 0 25px;
       .inputLabel{
         p{
           text-align: left;
           font-weight: bold;
+          margin: 5px 0;
         }
       }
       input{
@@ -255,9 +257,10 @@ export default {
 }
 
 .error{
-  text-align: left;
+  text-align: right;
   font-size: 12px;
   color: #ee0350;
   margin-top: 12px;
+  margin-right: 30px;
 }
 </style>

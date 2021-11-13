@@ -18,7 +18,7 @@
                   <div class="update-avt">
                     <input id="imgAv" type="file" style="display: none" @change="onFileChange"/>
                     <div id="preview" >
-                      <img :src="url?url:'https://i.pinimg.com/736x/59/18/d8/5918d8e9040516b65f93c75a9c5b8175.jpg'" @click="openUpload()"/>
+                      <img :src="url" @click="openUpload()"/>
                     </div>
                     <div class="update-avatar" @click="openUpload()">
                       <i class="el-icon-camera-solid"></i>
@@ -48,26 +48,25 @@
             <div v-else class="info-user pass-reset">
               <div class="input-wrap">
                 <div class="form">
-                  <input type="text" id="email" class="form__input email-disable" autocomplete="off" placeholder=" ">
+                  <input type="password" id="email" v-model="password" class="form__input email-disable" autocomplete="off" placeholder=" ">
                   <label class="form__label">Mật khẩu mới</label>
                 </div>
-                <p class="error">Lỗi</p>
+                <p class="error">{{errorPass}}</p>
               </div>
               <div class="input-wrap">
                 <div class="form">
-                  <input type="text" id="email" class="form__input email-disable" autocomplete="off" placeholder=" ">
+                  <input type="password" id="email" v-model="confirmPass" class="form__input email-disable" autocomplete="off" placeholder=" ">
                   <label class="form__label">Xác nhận lại mật khẩu</label>
                 </div>
-                <p class="error">Lỗi</p>
+                <p class="error">{{errorPassCheck}}</p>
               </div>
               <div class="login-button">
-                <button class="loginButton"><b>Cập nhật</b></button>
+                <button class="loginButton" @click="HandleChangePass()"><b>Cập nhật</b></button>
               </div>
             </div>
           </div>
         </el-col>
       </el-row>
-
     </div>
   </div>
 </template>
@@ -79,6 +78,7 @@ export default {
   name: "UserUpdate",
   data(){
     return{
+      avatar : '',
       url: null,
       ActiveUS : '',
       ActivePass :'',
@@ -95,12 +95,20 @@ export default {
     ...mapMutations('auth',[
       'updateAuthUser',
     ]),
+    refresh(){
+      this.name = ''
+      this.errorName = ''
+      this.errorPassCheck = ''
+      this.errorPass = ''
+      this.password = ''
+      this.confirmPass = ''
+    },
     openUpload(){
       document.getElementById('imgAv').click();
     },
     onFileChange(e) {
-      const file = e.target.files[0];
-      this.url = URL.createObjectURL(file);
+      this.avatar = e.target.files[0];
+      this.url = URL.createObjectURL(this.avatar);
     },
     HandleInfo(){
       let check = true
@@ -112,14 +120,64 @@ export default {
         this.errorName = 'Họ tên ít nhất phải 5 kí tự'
       }
       if(check){
-        api.updateInfoUser({
-          name:this.name,
+        let data = new FormData();
+        data.append('name',this.name)
+        if (typeof this.avatar === 'object'){
+          data.append('avatar',this.avatar)
+        }
+        api.updateInfoUser(data).then(()=>{
+          api.getAuth().then((res)=>{
+            if (res.data.avatar !== null){
+              res.data.avatar = `http://vuecourse.zent.edu.vn/storage/users/${res.data.avatar}`
+            }else{
+              res.data.avatar = 'https://i.pinimg.com/736x/59/18/d8/5918d8e9040516b65f93c75a9c5b8175.jpg'
+            }
+            this.updateAuthUser(res.data)
+            this.$message({
+              message: 'Cập nhật thông tin thành công ! ',
+              type: 'success'
+            });
+          }).catch(()=>{
+            this.$message({
+              message: 'Cập nhật thông tin thất bại ! ',
+              type: 'error'
+            });
+          })
+        })
+      }
+    },
+    HandleChangePass(){
+      let check = true
+      if (this.password === ''){
+        check = false
+        this.errorPass = "Mật khẩu không được để trống"
+      }else if(this.password.length < 6){
+        check = false
+        this.errorPass = "Mật khẩu phải lớn hơn 6 ký tự"
+      }
+      if(this.confirmPass === ''){
+        check = false
+        this.errorPassCheck = "Mật khẩu xác nhận không được để trống"
+      }else if(this.password !== this.confirmPass){
+        check = false
+        this.errorPassCheck = "Mật khẩu không khớp"
+      }
+      if (check){
+        api.updatePassword({
+          password : this.password,
+          password_confirmation : this.confirmPass
         }).then(()=>{
+          api.getAuth()
+          this.refresh()
           this.$message({
-            message: 'Cập nhật thông tin thành công ! ',
+            message: 'Cập nhật mật khẩu thành công',
             type: 'success'
           });
-          this.$router.push({ path: `/user`})
+        }).catch(()=>{
+          this.$message({
+            message: 'Cập nhật mật khẩu thất bại',
+            type: 'error'
+          });
         })
       }
     },
@@ -141,15 +199,23 @@ export default {
     ])
   },
   mounted() {
-    api.getAuth().then((res)=>{
-      this.updateAuthUser(res.data)
-    })
     this.name = this.authUser.name
+    this.url = this.authUser.avatar
   },
   watch:{
     name(){
       if (this.name.length > 0){
         this.errorName = ''
+      }
+    },
+    password(){
+      if (this.password.length > 0 ){
+        this.errorPass = ''
+      }
+    },
+    confirmPass(){
+      if (this.confirmPass.length > 0 ){
+        this.errorPassCheck = ''
       }
     }
   }
@@ -410,12 +476,13 @@ reduce the size of the label and move upwards
 //Upload Avatar
 .update-avatar{
   position: absolute;
-  left: 66%;
+  left: 60%;
   font-size: 20px;
-  top: 83%;
+  top: 80%;
   background-color: white;
   padding: 3px 5px;
   border-radius: 50%;
   cursor: pointer;
+  box-shadow: 0px 0px 6px 0px black;
 }
 </style>

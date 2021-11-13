@@ -7,8 +7,9 @@
       </a>
     </div>
     <div class="user">
+      <p><b>Hello</b>, {{authUser.name}}</p>
       <el-dropdown trigger="click">
-        <img src="https://pdp.edu.vn/wp-content/uploads/2021/05/hinh-anh-avatar-nam-1.jpg" alt="">
+        <img :src="authUser.avatar" alt="">
         <el-dropdown-menu slot="dropdown">
           <el-dropdown-item>
             <div class="item-mng" @click="handlePush('user')">
@@ -39,7 +40,8 @@
 </template>
 
 <script>
-import {mapMutations} from 'vuex'
+import {mapMutations, mapState} from 'vuex'
+import api from "../api";
 export default {
   name: "AdminLayout",
   methods:{
@@ -57,16 +59,30 @@ export default {
       this.updateAccessToken('')
       this.$router.push('/login')
     }
+  },
+  computed:{
+    ...mapState('auth',[
+      'authUser'
+    ])
+  },
+  mounted() {
+    api.getAuth().then((res)=>{
+      if (res.data.avatar !== null){
+        res.data.avatar = `http://vuecourse.zent.edu.vn/storage/users/${res.data.avatar}`
+      }else{
+        res.data.avatar = 'https://i.pinimg.com/736x/59/18/d8/5918d8e9040516b65f93c75a9c5b8175.jpg'
+      }
+      this.updateAuthUser(res.data)
+    })
   }
 }
 </script>
 
 <style scoped lang="scss">
+img{
+  object-fit: cover;
+}
 .container {
-  //background-image: url("../assets/Untitled-3.png");
-  //background-size: cover;
-  //background-repeat: no-repeat;
-  //background-color: black;
   .header {
     height: 44.35px;
     display: flex;
@@ -103,20 +119,25 @@ export default {
       display: flex;
       align-items: center;
       justify-content: space-between;
-
+      p{
+        color: white;
+        margin-right: 10px;
+        font-size: 14px;
+      }
       img {
         width: 35px;
         height: 35px;
         border-radius: 50%;
+        object-fit: cover;
         cursor: pointer;
+        border: 2px solid white;
       }
     }
   }
 
   .content {
     height: 94vh;
-    //background-color: #1c1c1c;
-    background-image: url("https://wallpaperaccess.com/full/5139456.jpg");
+    background-image: url("../assets/Material-Design-High-Definition-Wallpaper-42260.jpg");
     background-repeat: no-repeat;
     background-size: cover;
     .el-row{
@@ -130,13 +151,18 @@ export default {
 
 .el-dropdown-menu {
   padding: 0;
+  background-color: #131313;
   .el-dropdown-menu__item {
     width: 150px;
     padding: 0;
-
+    color: white;
     .item-mng {
       padding: 0 15px;
     }
+  }
+  .el-dropdown-menu__item:hover{
+    background-color: black;
+    color: white;
   }
 }
 </style>
