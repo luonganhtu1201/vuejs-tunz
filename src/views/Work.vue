@@ -32,7 +32,7 @@
                 </el-row>
                 <el-row>
                   <el-col :span="24">
-                    <div class="row">
+                    <div class="row" :id="element.id">
                       <div class="col-6">
                         <draggable
                             :list="element.cards"
@@ -41,30 +41,64 @@
                             group="itemChildren"
                             @start="dragging = true"
                             @end="dragging = false"
-                            @change="changeIndexChild">
-                          <transition-group type="transition" :name="!dragging ? 'flip-list' : null">
+                            v-bind="dragOptionsChild"
+                            :move="changeIndexChild">
                           <div
                               class="list-group-item-child"
                               v-for="(item,indexChild) in element.cards"
                               :key="indexChild"
                               @click="infoCard(item.id)">
                             <div class="item-child">
-                              <div class="tag-sort">
-                                <span class="danger">Quan trọng</span>
+                              <div class="image-lock" v-if="item.fileCheck">
+                                <img :src="item.fileCheck" alt="">
                               </div>
-                              {{ item.title }}
-                              <div class="deadline">
-                                <i class="el-icon-alarm-clock"></i>
-                                <span v-if="item.deadline">
-                                  {{formatDate(item.deadline)}}
-                                </span>
-                                <span v-else>
-                                  Chưa cập nhật
-                                </span>
+                              <div class="tag-sort" v-if="item.labels.length > 0">
+                                <el-row >
+                                  <el-col :span="4" v-for="(card,indexCard) in item.labels" :key="indexCard">
+                                    <span class="danger" :style="'background-color:'+card.color"></span>
+                                  </el-col>
+                                </el-row>
                               </div>
+                              <p class="title-card-custom"><i class="el-icon-success done-custom" v-if="item.status === 3"></i>{{ item.title }}</p>
+                              <el-row>
+                                <el-col :span="12">
+                                  <div class="deadline">
+                                    <i class="el-icon-alarm-clock"></i>
+                                    <span class="color-deadline" v-if="item.deadline !== null">
+                                      {{formatDate(item.deadline)}}
+                                    </span>
+                                    <span class="color-deadline" v-else>
+                                      Chưa cập nhật
+                                    </span>
+                                  </div>
+                                </el-col>
+                                <el-col v-if="item.taskTodoDone !== 0" :span="12">
+                                  <div class="deadline taskTodo">
+                                    <i class="el-icon-paperclip"></i>
+                                    <span class="paperClip">
+                                      {{item.attachments}}
+                                    </span>
+                                      <i class="el-icon-star-on"></i>
+                                    <span>
+                                      {{item.taskTodoDone}}
+                                    </span>
+                                  </div>
+                                </el-col>
+                                <el-col v-else :span="12">
+                                  <div class="deadline taskTodo">
+                                    <i class="el-icon-paperclip"></i>
+                                    <span class="paperClip">
+                                      {{item.attachments}}
+                                    </span>
+                                    <i class="el-icon-star-on"></i>
+                                    <span>
+                                      0/0
+                                    </span>
+                                  </div>
+                                </el-col>
+                              </el-row>
                             </div>
                           </div>
-                          </transition-group>
                         </draggable>
                         <div class="add-task">
                           <div v-if="!element.addNewTask" class="add-new" @click="addTask(index)">
@@ -84,7 +118,6 @@
                 </el-row>
               </div>
             </div>
-
         </transition-group>
       </draggable>
       <div id="todo" class="list-group-item add-section-click">
@@ -113,6 +146,7 @@ import draggable from 'vuedraggable';
 import DetailCard from "../components/DetailCard";
 import api from '../api';
 import {mapMutations, mapState} from 'vuex'
+import _ from 'lodash'
 // let id = 1;
 export default {
   name: "Work",
@@ -130,7 +164,12 @@ export default {
       dragging: false,
       drag: false,
       checkAdd : true,
-      directories:[]
+      directories:[],
+      typeImages:[
+        'jpg',
+        'jpeg',
+        'PNG'
+      ]
     };
   },
   computed: {
@@ -144,18 +183,31 @@ export default {
         disabled: false,
         ghostClass: "ghost"
       };
+    },
+    dragOptionsChild() {
+      return {
+        animation: 200,
+        disabled: false,
+        ghostClass: "ghost"
+      };
     }
   },
   methods: {
     ...mapMutations('detailTask',[
         'setDetailCard',
+        'setFilesCard',
+        'setSrcCard',
+        'warningTime'
     ]),
-    changeIndexChild(evt){
+    changeIndexChild(e){
+      let cardId = e.draggedContext.element.id
+      let index = e.draggedContext.futureIndex
+      let directoryId = e.to.parentElement.parentElement.getAttribute('id')
       api.changeIndexCard({
-        index:evt.moved.newIndex,
-        directory_id:evt.moved.element.directory_id
-      },evt.moved.element.id).then(()=>{
-        this.getListTasks()
+        index:index,
+        directory_id:directoryId
+      },cardId).then(()=>{
+
       }).catch(()=>{
         this.$message({
           message: 'Di chuyển thẻ con thất bại ! ',
@@ -183,8 +235,36 @@ export default {
         this.directories = res.data.data
         this.directories.forEach((el) => {
           el.addNewTask = false
+          el.cards.forEach((elm)=>{
+            api.getDetailCard(elm.id).then((res)=>{
+              let total = 0
+              let data = res.data.data.check_lists
+              let child = 0
+              let childDone = 0
+              if (data.length > 0){
+                data.forEach((elm)=>{
+                  if (elm.check_list_childs.length > 0){
+                    child += elm.check_list_childs.length
+                    childDone += _.filter(elm.check_list_childs,{'status':1}).length
+                    total = childDone + '/' +child
+                  }
+                })
+              }
+              elm.taskTodoDone = total
+              elm.attachments  = res.data.data.files.length
+              this.refresh()
+            })
+            api.getDetailCard(elm.id).then((res)=>{
+              let files = res.data.data
+              files.files.forEach((e)=>{
+                if (this.checkTypeFile(e.path)){
+                  elm.fileCheck = 'http://vuecourse.zent.edu.vn/storage/'+e.path
+                }
+              })
+              this.refresh()
+            })
+          })
         })
-        this.refresh()
       });
     },
     handleDelete(){
@@ -204,7 +284,7 @@ export default {
           id:el.id,
           title:el.title
         }).then(()=>{
-          this.getListTasks()
+
         }).catch(()=>{
           this.$message({
             message: 'Cập nhật thất bại ! ',
@@ -299,10 +379,6 @@ export default {
           });
         })
       }).catch(()=>{
-        this.$message({
-          type: 'info',
-          message: 'Hủy bỏ xóa danh sách '
-        });
       });
     },
     // Detail Card
@@ -314,6 +390,23 @@ export default {
             el.addTaskChild = false
           })
         }
+        let dataFile = []
+        let srcCardPreview = []
+        data.files.forEach((elm)=>{
+          let file = {
+            id:elm.id,
+            name:elm.name,
+            thumbnail:'http://vuecourse.zent.edu.vn/storage/'+elm.path,
+            src:'http://vuecourse.zent.edu.vn/storage/'+elm.path,
+            updated_at:elm.updated_at
+          }
+          if (this.checkTypeFile(file.thumbnail)){
+            srcCardPreview.push(file.thumbnail)
+          }
+          dataFile.push(file)
+        })
+        this.setSrcCard(srcCardPreview)
+        this.setFilesCard(dataFile)
         this.setDetailCard(data)
         this.dialogTableVisible = true
       }).catch(()=>{
@@ -322,6 +415,17 @@ export default {
           message: 'Xem chi tiết thẻ thất bại'
         });
       })
+    },
+    checkTypeFile(path) {
+      let isCheckType = false
+      let index = path.lastIndexOf('.')
+      let type = path.substring(index + 1)
+      this.typeImages.forEach((item) =>{
+        if (item === type) {
+          isCheckType = true
+        }
+      })
+      return isCheckType
     },
     formatDate(dateString){
       return moment(dateString).format('DD/MM/YYYY')
@@ -447,23 +551,25 @@ export default {
   height: max-content;
   border-radius: 8px;
 }
-//.section-custom:hover{
-//  background-color: #656565;
-//}
 .tag-sort{
   margin-bottom: 15px;
   .danger{
-    max-width: 30px;
-    height: 8px;
-    padding: 2px 7px;
-    font-size: 12px;
+    padding: 0 16px;
+    font-size: 6px;
     border-radius: 10px;
-    background-color: #ed145b;
+    //background-color: #ed145b;
   }
 }
 .deadline{
   font-size: 12px;
   padding-top: 20px;
+  .color-deadline{
+    color: gray;
+  }
+}
+.taskTodo{
+  text-align: right;
+  margin-right: 10px;
 }
 .option-section{
   cursor: pointer;
@@ -538,5 +644,28 @@ export default {
   border: none;
   font-weight: 400;
   font-size: 16px;
+}
+.title-card-custom {
+  width: 217px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+.image-lock{
+  img{
+    width: 217.14px;
+    object-fit: cover;
+    height: 126.14px;
+  }
+}
+.done-custom{
+  margin-right: 3px;
+  color: #30e166;
+}
+.paperClip{
+  padding-right: 3px;
+  margin-right: 3px;
+  border-right: 1px solid gray;
 }
 </style>

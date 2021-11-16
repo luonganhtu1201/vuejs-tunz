@@ -138,6 +138,81 @@ export default {
             data:data
         })
     },
+    updateDeadlineCard(data,id){
+        return apiAxios({
+            method:'put',
+            url:'/cards/'+id+'/change-status-deadline',
+            data:data
+        })
+    },
+    uploadFileCard(data,id){
+      return apiAxios({
+          method:'post',
+          url:'/cards/'+id+'/upload-file',
+          data:data
+      })
+    },
+    deleteFileCard(id){
+        return apiAxios({
+            method:'delete',
+            url:'/files/'+id
+        })
+    },
+    updateFileCard(data,id){
+        return apiAxios({
+            method:'put',
+            url:'/files/'+id,
+            data:data
+        })
+    },
+    changeStatusCard(data,id){
+        return apiAxios({
+            method:'put',
+            url:'/cards/'+id+'/change-status',
+            data:data
+        })
+    },
+    //Nhãn
+    addStickerCard(data,id){
+        return apiAxios({
+            method:'post',
+            url:'/cards/'+id+'/label',
+            data:data
+        })
+    },
+    getListSticker(){
+        return apiAxios({
+            method:'get',
+            url:'/labels'
+        })
+    },
+    deleteStickerCard(id){
+      return apiAxios({
+          method:'delete',
+          url:'labels/'+id
+      })
+    },
+    removeStickerInCard(data,id){
+        return apiAxios({
+            method:'delete',
+            url:'/cards/'+id+'/detach-labels',
+            data:data
+        })
+    },
+    addStickerAvailable(data,id){
+        return apiAxios({
+            method:'post',
+            url:'/cards/'+id+'/attach-labels',
+            data:data
+        })
+    },
+    updateStickerCard(data,id){
+        return apiAxios({
+            method:'put',
+            url:'/labels/'+id,
+            data:data
+        })
+    },
     //Công việc cần làm
     addThingsToDo(data){
         return apiAxios({

@@ -13,6 +13,7 @@ const routes = [
     path: '/',
     name: 'AdminLayout',
     component: AdminLayout,
+    meta: { title: 'Skills - MyApp' },
     children:[
       {
         path:'user',
@@ -29,7 +30,7 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: Login
+    component: Login,
   },
   {
     path: '/register',

@@ -208,6 +208,11 @@ export default {
         this.errorName = ''
       }
     },
+    passwordCheck(){
+      if (this.passwordCheck.length > 0){
+        this.errorOldPass = ''
+      }
+    },
     password(){
       if (this.password.length > 0 ){
         this.errorPass = ''
